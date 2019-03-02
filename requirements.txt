@@ -1,0 +1,6 @@
+pandas==0.24.1
+alpha-vantage==2.1.0
+
+uvloop==0.11.3
+ujson==1.35
+aiogram==2.0.1
