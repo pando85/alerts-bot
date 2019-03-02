@@ -48,7 +48,6 @@ def check_alert(alert: Alert):
 
     window_length = 14
     close = data['4. close']
-    # Get the difference in price from previous step
     rsi = get_rsi(close, window_length)
     print(rsi)
 
@@ -69,6 +68,16 @@ async def register_alarm(message: types.Message):
 
     alert = get_alert(message)
     append_alert(alert)
+
+
+@dp.message_handler(commands=['stop'])
+async def unregister_alarm(message: types.Message):
+    if not is_message_valid(message):
+        await bot.send_message(message.chat.id, HELP_MESSAGE)
+        return
+
+    alert = get_alert(message)
+    remove_alert(alert)
 
 
 def get_alert(message: types.Message) -> Alert:
