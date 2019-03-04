@@ -79,9 +79,14 @@ async def unregister_alarm(message: types.Message):
 @dp.message_handler(commands=['list'])
 async def list_alarms(message: types.Message):
     alerts = list_all(message.chat.id)
+    alerts_string_list = '\n'.join([
+        f'{alert.symbol} {alert.max_rsi} {alert.min_rsi}' for alert in alerts])
+
+    if not alerts_string_list:
+        alerts_string_list = 'No alarms set yet!'
     return await bot.send_message(
         message.chat.id,
-        '\n'.join([f'{alert.symbol} {alert.max_rsi} {alert.min_rsi}' for alert in alerts]))
+        alerts_string_list)
 
 
 def setup_logging():

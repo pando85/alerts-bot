@@ -1,0 +1,6 @@
+.env
+.mypy_cache
+alerts_bot.json
+alerts_bot/__pycache__
+Dockerfile
+tox.ini

@@ -36,9 +36,9 @@ def check_alert(alert: Alert) -> Optional[str]:
     log.debug(f'{alert.symbol} rsi: {rsi} -> max: {alert.max_rsi} {alert.min_rsi}')
 
     if rsi[-1] >= alert.max_rsi:
-        return f'{rsi.index[-1]} {alert.symbol} -> RSI: {rsi[-1]} -> SELL'
+        return f'{rsi.index[-1]} {alert.symbol} -> RSI: {rsi[-1]} -> SELL (last price: {close[-1]})'
 
     if rsi[-1] <= alert.min_rsi:
-        return f'{rsi.index[-1]} {alert.symbol} -> RSI: {rsi[-1]} -> BUY'
+        return f'{rsi.index[-1]} {alert.symbol} -> RSI: {rsi[-1]} -> BUY (last price: {close[-1]})'
 
     return None
