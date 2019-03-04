@@ -4,18 +4,18 @@ import logging
 from aiofunctools import curry, compose
 from aiogram import Bot, Dispatcher, executor, types
 
-from alerts_bot.config import BOT_TOKEN, LOG_LEVEL
-from alerts_bot.types import Alert, Maybe, MessageError
-from alerts_bot.storage import append_alert, remove_alert, list_all
+from alerts_bot.config import BOT_TOKEN, CHECK_PERIOD, LOG_LEVEL
+from alerts_bot.data import check_alert
 from alerts_bot.parser import validate_message, get_alert
+from alerts_bot.types import Alert, Maybe, MessageError
+from alerts_bot.storage import append_alert, list_all, read_data, remove_alert
 
 
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger('alerts_bot')
+log = logging.getLogger(__name__)
 
 # Initialize bot and dispatcher
 bot = Bot(token=BOT_TOKEN)
-loop = asyncio.get_event_loop()
 dp = Dispatcher(bot)
 
 HELP_MESSAGE = """
@@ -90,6 +90,25 @@ def setup_logging():
     log.debug(f'Setup log level to f{LOG_LEVEL}')
 
 
+async def check_alerts():
+    while True:
+        await asyncio.sleep(2)
+
+        data = read_data()
+
+        for alert in data.alerts:
+            try:
+                message = check_alert(alert)
+                if message:
+                    await bot.send_message(alert.chat_id, message)
+            except Exception as e:
+                log.debug(e)
+                pass
+        await asyncio.sleep(CHECK_PERIOD)
+
+
 def main():
     setup_logging()
+    loop = asyncio.get_event_loop()
+    loop.create_task(check_alerts())
     executor.start_polling(dp, loop=loop, skip_updates=True)
