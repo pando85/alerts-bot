@@ -1,7 +1,9 @@
 import logging
 import pandas
+import pytz
 
 from alpha_vantage.timeseries import TimeSeries
+from datetime import datetime
 from typing import Optional
 
 from alerts_bot.config import ALPHAVANTAGE_API_KEY
@@ -9,6 +11,12 @@ from alerts_bot.types import Alert
 
 
 log = logging.getLogger(__name__)
+
+NASDAQ_TZ = pytz.timezone('America/New_York')
+
+
+def _is_stock_market_open(current_time: datetime) -> bool:
+    return current_time.hour > 9 and current_time.hour < 16 and current_time.weekday() in range(4)
 
 
 def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
@@ -25,6 +33,12 @@ def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
 
 
 def check_alert(alert: Alert) -> Optional[str]:
+    current_time_nasdaq_tz = pytz.utc.localize(datetime.utcnow(), is_dst=None).astimezone(NASDAQ_TZ)
+    log.debug(current_time_nasdaq_tz)
+    if not _is_stock_market_open(current_time_nasdaq_tz):
+        log.debug('Stock market is closed')
+        log.debug(f'NASDAQ time is: {current_time_nasdaq_tz}')
+        return None
     ts = TimeSeries(key=ALPHAVANTAGE_API_KEY, output_format='pandas')
 
     data, meta_data = ts.get_intraday(symbol=alert.symbol, interval='1min', outputsize='compact')
