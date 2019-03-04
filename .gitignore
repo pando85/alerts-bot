@@ -116,3 +116,4 @@ dmypy.json
 .pyre/
 
 .env
+alerts_bot.json

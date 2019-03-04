@@ -1,13 +1,14 @@
 import asyncio
 import logging
-import pandas
 
+from aiofunctools import curry, compose
 from aiogram import Bot, Dispatcher, executor, types
-from alpha_vantage.timeseries import TimeSeries
 
-from alerts_bot.config import BOT_TOKEN
-from alerts_bot.types import Alert
-from alerts_bot.storage import append_alert, remove_alert
+from alerts_bot.config import BOT_TOKEN, LOG_LEVEL
+from alerts_bot.types import Alert, Maybe, MessageError
+from alerts_bot.storage import append_alert, remove_alert, list_all
+from alerts_bot.parser import validate_message, get_alert
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('alerts_bot')
@@ -19,38 +20,28 @@ dp = Dispatcher(bot)
 
 HELP_MESSAGE = """
     Alarm bot for stock RSI changes
-    /start <symbol> [<max_rsi> <min_rsi>]   Init alarm in stock. Defaults: max_rsi=70 min_rsi=30
-    /stop <symbol>
+    /start <symbol> [<max_rsi> <min_rsi>]   Init stock alarm. Defaults: max_rsi=70 min_rsi=30
+    /stop <symbol> [<max_rsi> <min_rsi>]    Remove stock alarm. Defaults: max_rsi=70 min_rsi=30
+    /list                                   List registered alarms
 
     Examples:
-    /start MU 70 30
+    /start MU
     /stop MU
+    /start GOOGL 80 20
+    /stop GOOGL 80 20
+    /list
+
 """
 
 
-def get_rsi(series, window_length):
-    delta = series.diff()
-    up = delta.copy()
-    down = delta.copy()
-    up[up < 0] = 0
-    down[down > 0] = 0
-    roll_up = pandas.Series.ewm(up, span=window_length).mean()
-    roll_down = pandas.Series.ewm(down, span=window_length).mean().abs()
-    rs = roll_up / roll_down
-    rsi = 100.0 - (100.0 / (1.0 + rs))
-    return rsi
+@curry
+async def reply(reply_message: str, alert: Maybe[Alert]) -> Maybe[Alert]:
+    if isinstance(alert, MessageError):
+        await bot.send_message(alert.chat_id, alert.message)
+        return alert
 
-
-def check_alert(alert: Alert):
-    ts = TimeSeries(key='EJ69MPM068NGTJ30', output_format='pandas')
-
-    data, meta_data = ts.get_intraday(symbol=alert.symbol, interval='1min', outputsize='compact')
-
-    window_length = 14
-    close = data['4. close']
-    # Get the difference in price from previous step
-    rsi = get_rsi(close, window_length)
-    print(rsi)
+    await bot.send_message(alert.chat_id, reply_message.format(alert.symbol))
+    return alert
 
 
 @dp.message_handler(commands=['help'])
@@ -63,36 +54,42 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['start'])
 async def register_alarm(message: types.Message):
-    if not is_message_valid(message):
+    if not validate_message(message):
         await bot.send_message(message.chat.id, HELP_MESSAGE)
         return
 
-    alert = get_alert(message)
-    append_alert(alert)
+    return await compose(
+        validate_message,
+        get_alert,
+        append_alert,
+        reply('{} alert registered correctly')
+    )(message)
 
 
-def get_alert(message: types.Message) -> Alert:
-    text_list = message.text.split(' ')
-    if len(text_list) == 1:
-        return Alert(message.chat.id, text_list[0])
+@dp.message_handler(commands=['stop'])
+async def unregister_alarm(message: types.Message):
+    return await compose(
+        validate_message,
+        get_alert,
+        remove_alert,
+        reply('{} alert removed correctly')
+    )(message)
 
-    return Alert(message.chat.id, text_list[0], int(text_list[1]), int(text_list[2]))
+
+@dp.message_handler(commands=['list'])
+async def list_alarms(message: types.Message):
+    alerts = list_all(message.chat.id)
+    return await bot.send_message(
+        message.chat.id,
+        '\n'.join([f'{alert.symbol} {alert.max_rsi} {alert.min_rsi}' for alert in alerts]))
 
 
-def is_message_valid(message):
-    text_list = message.text.split(' ')
-    _len = len(text_list)
-    if _len > 3 or _len < 1:
-        return False
-    if _len == 1:
-        return True
-    try:
-        int(text_list[1])
-        int(text_list[1])
-    except ValueError:
-        return False
-    return True
+def setup_logging():
+    root_logger = logging.getLogger()
+    root_logger.setLevel(LOG_LEVEL)
+    log.debug(f'Setup log level to f{LOG_LEVEL}')
 
 
 def main():
+    setup_logging()
     executor.start_polling(dp, loop=loop, skip_updates=True)
