@@ -23,6 +23,7 @@ HELP_MESSAGE = """
     /start <symbol> [<max_rsi> <min_rsi>]   Init stock alarm. Defaults: max_rsi=70 min_rsi=30
     /stop <symbol> [<max_rsi> <min_rsi>]    Remove stock alarm. Defaults: max_rsi=70 min_rsi=30
     /list                                   List registered alarms
+    /help                                   show this message
 
     Examples:
     /start MU

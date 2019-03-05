@@ -1,8 +1,8 @@
-
 from aiofunctools import bind
-
 from aiogram.types import Message
-from alerts_bot.types import Alert, Maybe, ArgsLenError, ArgsTypeError
+
+from alerts_bot import symbols
+from alerts_bot.types import Alert, ArgsLenError, ArgsTypeError, InvalidSymbolError, Maybe
 
 
 @bind
@@ -19,6 +19,8 @@ def validate_message(message: Message) -> Maybe[Alert]:
     _len = len(text_list)
     if _len > 4 or _len < 2:
         return ArgsLenError('Invalid number of arguments sent', message.chat.id)
+    if text_list[1] not in symbols.ALL:
+        return InvalidSymbolError('Invalid symbol, try another one.', message.chat.id)
     if _len == 2:
         return message
     try:

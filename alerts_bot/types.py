@@ -17,6 +17,10 @@ class ArgsTypeError(MessageError):
     pass
 
 
+class InvalidSymbolError(MessageError):
+    pass
+
+
 class NotAlertFound(MessageError):
     pass
 
