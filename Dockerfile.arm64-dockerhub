@@ -1,5 +1,7 @@
 FROM arm64v8/python:3
 
+COPY qemu-armeb-static /usr/bin
+
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
