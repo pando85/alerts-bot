@@ -43,6 +43,12 @@ def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
 
 
 def check_alert(alert: Alert) -> Optional[str]:
+    current_time_nasdaq_tz = pytz.utc.localize(datetime.utcnow(), is_dst=None).astimezone(NASDAQ_TZ)
+    log.debug(current_time_nasdaq_tz)
+    if not _is_stock_market_open(current_time_nasdaq_tz):
+        log.debug('Stock market is closed')
+        log.debug(f'NASDAQ time is: {current_time_nasdaq_tz}')
+        return None
 
     cache_path = f'/tmp/{alert.symbol}.pkl'
     if is_cache_Valid(cache_path):
