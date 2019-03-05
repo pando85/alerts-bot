@@ -18,6 +18,7 @@ NASDAQ_TZ = pytz.timezone('America/New_York')
 
 
 def _is_stock_market_open(current_time: datetime) -> bool:
+    # don't track first 30 min
     return current_time.hour > 9 and current_time.hour < 16 and current_time.weekday() in range(4)
 
 
