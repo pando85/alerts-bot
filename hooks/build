@@ -1,0 +1,2 @@
+#!/bin/bash -e
+docker build --platform arm64 -f $DOCKERFILE_PATH -t $IMAGE_NAME .
