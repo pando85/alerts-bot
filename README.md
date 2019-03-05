@@ -9,7 +9,7 @@ Bot intended to track stock symbols and rise alarms when RSI reaches desired val
 
 - qemu-user-static package installed.
 - `{"experimental": true}` in `/etc/docker/daemon.json`
-
+- remove line `COPY qemu-arm-static /usr/bin` in `Dockerfile.arm64`
 
 ### commands
 
