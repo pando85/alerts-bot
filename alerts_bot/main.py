@@ -39,6 +39,7 @@ HELP_MESSAGE = """
 async def reply(reply_message: str, alert: Maybe[Alert]) -> Maybe[Alert]:
     if isinstance(alert, MessageError):
         await bot.send_message(alert.chat_id, alert.message)
+        await bot.send_message(alert.chat_id, 'Usage: /help')
         return alert
 
     await bot.send_message(alert.chat_id, reply_message.format(alert.symbol))

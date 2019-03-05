@@ -18,7 +18,7 @@ def validate_message(message: Message) -> Maybe[Alert]:
     text_list = message.text.split(' ')
     _len = len(text_list)
     if _len > 4 or _len < 2:
-        return ArgsLenError('Invalid number of arguments sent', message.chat.id)
+        return ArgsLenError('Invalid number of arguments sent.', message.chat.id)
     if text_list[1] not in symbols.ALL:
         return InvalidSymbolError('Invalid symbol, try another one.', message.chat.id)
     if _len == 2:
@@ -27,5 +27,5 @@ def validate_message(message: Message) -> Maybe[Alert]:
         int(text_list[2])
         int(text_list[3])
     except ValueError:
-        return ArgsTypeError('max_rsi and min_rsi must be integer values', message.chat.id)
+        return ArgsTypeError('max_rsi and min_rsi must be integer values.', message.chat.id)
     return message
