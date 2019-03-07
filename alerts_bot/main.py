@@ -109,9 +109,9 @@ async def check_alerts():
                 if message:
                     await bot.send_message(alert.chat_id, message)
             except KeyError as e:
-                log.error(e)
+                log.error(f'{alert.symbol}: {e}')
             except Exception as e:
-                log.error(e)
+                log.error(f'{alert.symbol}: {e}')
         await asyncio.sleep(CHECK_PERIOD)
 
 
