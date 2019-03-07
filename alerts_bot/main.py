@@ -103,6 +103,7 @@ async def check_alerts():
 
         data = read_data()
 
+        # free API key just give 5 request per minute and 500 per day
         for alert in data.alerts:
             try:
                 message = check_alert(alert)
