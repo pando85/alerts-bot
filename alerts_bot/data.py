@@ -44,17 +44,20 @@ def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
 
 
 def check_alert(alert: Alert) -> Optional[str]:
-    current_time_nasdaq_tz = pytz.utc.localize(datetime.utcnow(), is_dst=None).astimezone(NASDAQ_TZ)
+    current_time_nasdaq_tz = pytz.utc.localize(
+        datetime.utcnow(), is_dst=False).astimezone(NASDAQ_TZ)
     log.debug(current_time_nasdaq_tz)
     if not _is_stock_market_open(current_time_nasdaq_tz):
         log.debug('Stock market is closed')
         log.debug(f'NASDAQ time is: {current_time_nasdaq_tz}')
         return None
 
-    cache_path = f'/tmp/{alert.symbol}.pkl'
-    if is_cache_Valid(cache_path):
-        log.debug(f'Reading cache file: {cache_path}')
-        rsi = pandas.read_pickle(cache_path)
+    rsi_cache_path = f'/tmp/{alert.symbol}.rsi.pkl'
+    close_cache_path = f'/tmp/{alert.symbol}.close.pkl'
+    if is_cache_Valid(rsi_cache_path) and is_cache_Valid(close_cache_path):
+        log.debug(f'Reading cache files: {rsi_cache_path} and {close_cache_path}')
+        rsi = pandas.read_pickle(rsi_cache_path)
+        close = pandas.read_pickle(close_cache_path)
     else:
         ts = TimeSeries(key=ALPHAVANTAGE_API_KEY, output_format='pandas')
         data, meta_data = ts.get_intraday(symbol=alert.symbol, interval='1min', outputsize='compact')
@@ -63,7 +66,8 @@ def check_alert(alert: Alert) -> Optional[str]:
         close = data['4. close']
         # Get the difference in price from previous step
         rsi = get_rsi(close, window_length)
-        rsi.to_pickle(cache_path)
+        rsi.to_pickle(rsi_cache_path)
+        close.to_pickle(close_cache_path)
     log.debug(f'{alert.symbol} rsi: {rsi} -> max: {alert.max_rsi} {alert.min_rsi}')
 
     if rsi[-1] >= alert.max_rsi:
