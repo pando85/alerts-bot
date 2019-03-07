@@ -104,9 +104,14 @@ async def check_alerts():
         data = read_data()
 
         for alert in data.alerts:
-            message = check_alert(alert)
-            if message:
-                await bot.send_message(alert.chat_id, message)
+            try:
+                message = check_alert(alert)
+                if message:
+                    await bot.send_message(alert.chat_id, message)
+            except KeyError as e:
+                log.error(e)
+            except Exception as e:
+                log.error(e)
         await asyncio.sleep(CHECK_PERIOD)
 
 
