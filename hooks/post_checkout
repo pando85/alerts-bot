@@ -1,5 +1,12 @@
-#!/bin/bash -e
-# downloads a local copy of qemu on docker-hub build machines
-curl -L https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-arm.tar.gz | tar zxvf - -C .
-mv qemu-3.0.0+resin-arm/qemu-arm-static .
-export PATH=$(pwd):$PATH
+#!/usr/bin/env bash
+set -eu
+
+apt-get update
+apt-get install -y curl qemu-user-static binfmt-support jq moreutils
+
+curl https://download.docker.com/linux/static/stable/x86_64/docker-18.09.1.tgz | \
+  tar xvz docker/docker
+
+mkdir -p ~/.docker
+jq --null-input  --arg experimental enabled '. + {experimental: $experimental}' | \
+sponge ~/.docker/config.json
