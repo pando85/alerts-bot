@@ -1,2 +1,3 @@
 #!/bin/bash -e
-docker build --platform arm64 -f $DOCKERFILE_PATH -t $IMAGE_NAME .
+docker build --platform $(echo $DOCKERFILE_PATH | cut -d'.' -f2 | grep arm || echo amd64) \
+    -f $DOCKERFILE_PATH -t $IMAGE_NAME .
