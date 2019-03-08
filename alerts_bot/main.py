@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from aiofunctools import curry, compose
 from aiogram import Bot, Dispatcher, executor, types
@@ -11,7 +12,6 @@ from alerts_bot.types import Alert, Maybe, MessageError
 from alerts_bot.storage import append_alert, list_all, read_data, remove_alert
 
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 # Initialize bot and dispatcher
@@ -92,9 +92,16 @@ async def list_alarms(message: types.Message):
 
 
 def setup_logging():
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
     root_logger = logging.getLogger()
     root_logger.setLevel(LOG_LEVEL)
-    log.debug(f'Setup log level to f{LOG_LEVEL}')
+    log.info(root_logger.handlers)
+    screen_handler = logging.StreamHandler(stream=sys.stdout)
+    screen_handler.setFormatter(formatter)
+    root_logger.addHandler(screen_handler)
+    log.info(root_logger.handlers)
+    log.debug(f'Setup log level to {LOG_LEVEL}')
 
 
 async def check_alerts():
