@@ -19,7 +19,7 @@ NASDAQ_TZ = pytz.timezone('America/New_York')
 
 def _is_stock_market_open(current_time: datetime) -> bool:
     return ((current_time.hour > 9 or (current_time.hour == 9 and current_time.minute > 30)) and
-            current_time.hour < 16 and current_time.weekday() in range(4))
+            current_time.hour < 16 and current_time.weekday() in range(5))
 
 
 def is_cache_Valid(file_path: str) -> bool:
