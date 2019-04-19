@@ -1,7 +1,6 @@
 import logging
 import os
 import pandas
-import pytz
 import time
 
 from alpha_vantage.timeseries import TimeSeries
@@ -19,7 +18,7 @@ CALENDAR = get_calendar('XNYS')
 
 
 def _is_stock_market_open(current_time: datetime) -> bool:
-    return CALENDAR.is_session(pandas.Timestamp.now())
+    return CALENDAR.is_session(current_time)
 
 
 def is_cache_Valid(file_path: str) -> bool:
@@ -44,12 +43,10 @@ def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
 
 
 def check_alert(alert: Alert) -> Optional[str]:
-    current_time_nasdaq_tz = pytz.utc.localize(
-        datetime.utcnow(), is_dst=False).astimezone(NASDAQ_TZ)
-    log.debug(current_time_nasdaq_tz)
-    if not _is_stock_market_open(current_time_nasdaq_tz):
+    current_time = pandas.Timestamp.now()
+    log.debug(current_time)
+    if not _is_stock_market_open(current_time):
         log.debug('Stock market is closed')
-        log.debug(f'NASDAQ time is: {current_time_nasdaq_tz}')
         return None
 
     rsi_cache_path = f'/tmp/{alert.symbol}.rsi.pkl'
@@ -60,7 +57,8 @@ def check_alert(alert: Alert) -> Optional[str]:
         close = pandas.read_pickle(close_cache_path)
     else:
         ts = TimeSeries(key=ALPHAVANTAGE_API_KEY, output_format='pandas')
-        data, meta_data = ts.get_intraday(symbol=alert.symbol, interval='1min', outputsize='compact')
+        data, meta_data = ts.get_intraday(
+            symbol=alert.symbol, interval='1min', outputsize='compact')
         log.debug(f'Data for symbol {alert.symbol}: {data.tail()}')
         window_length = 14
         close = data['4. close']
