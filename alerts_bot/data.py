@@ -7,6 +7,7 @@ import time
 from alpha_vantage.timeseries import TimeSeries
 from datetime import datetime
 from typing import Optional
+from trading_calendars import get_calendar
 
 from alerts_bot.config import ALPHAVANTAGE_API_KEY, CHECK_PERIOD
 from alerts_bot.types import Alert
@@ -14,12 +15,11 @@ from alerts_bot.types import Alert
 
 log = logging.getLogger(__name__)
 
-NASDAQ_TZ = pytz.timezone('America/New_York')
+CALENDAR = get_calendar('XNYS')
 
 
 def _is_stock_market_open(current_time: datetime) -> bool:
-    return ((current_time.hour > 9 or (current_time.hour == 9 and current_time.minute > 30)) and
-            current_time.hour < 16 and current_time.weekday() in range(5))
+    return CALENDAR.is_session(pandas.Timestamp.now())
 
 
 def is_cache_Valid(file_path: str) -> bool:
