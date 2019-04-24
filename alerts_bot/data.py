@@ -18,7 +18,7 @@ CALENDAR = get_calendar('XNYS')
 
 
 def _is_stock_market_open(current_time: datetime) -> bool:
-    return CALENDAR.is_session(current_time)
+    return CALENDAR.is_open_on_minute(current_time)
 
 
 def is_cache_Valid(file_path: str) -> bool:

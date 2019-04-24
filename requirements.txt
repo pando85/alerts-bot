@@ -2,7 +2,7 @@ aiofunctools==0.0.1
 aiogram==2.0.1
 alpha-vantage==2.1.0
 pandas<0.24
-git+https://github.com/quantopian/trading_calendars
+trading-calendars @ git+https://github.com/quantopian/trading_calendars@7a632a0dd563ed50dadc387840e644a6d2d25452#trading-calendars==1.7.0+4.g7a632a0
 ujson==1.35
 uvloop==0.11.3
 pytz==2018.9
