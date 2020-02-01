@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Optional
 from trading_calendars import get_calendar
 
+from alerts_bot import symbols
 from alerts_bot.config import ALPHAVANTAGE_API_KEY, CHECK_PERIOD
 from alerts_bot.types import Alert
 
@@ -45,7 +46,7 @@ def get_rsi(series: pandas.Series, window_length: int) -> pandas.Series:
 def check_alert(alert: Alert) -> Optional[str]:
     current_time = pandas.Timestamp.now()
     log.debug(current_time)
-    if not _is_stock_market_open(current_time):
+    if alert.symbol in symbols.NASDAQ and not _is_stock_market_open(current_time):
         log.debug('Stock market is closed')
         return None
 
